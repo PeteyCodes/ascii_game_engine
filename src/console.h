@@ -27,8 +27,10 @@ typedef struct {
 } console_image_t;
 
 
-console_image_t *image_from_rexfile(const char *filename);
+console_image_t *console_image_from_rexfile(const char *filename);
 void image_destroy(console_image_t *image);
+
+console_cell_t *console_image_cell(const console_image_t *image, const uint32_t x, const uint32_t y);
 
 
 #endif

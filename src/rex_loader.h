@@ -32,7 +32,7 @@ typedef struct {
     rex_tile_layer_t *layers;
 } rex_tile_map_t;
 
-rex_tile_map_t *rex_load_tile_map(char *filename);
+rex_tile_map_t *rex_load_tile_map(const char *filename);
 void rex_destroy_tile_map(rex_tile_map_t *map);
 
 rex_tile_layer_t *rex_flatten_tile_map(rex_tile_map_t *map);

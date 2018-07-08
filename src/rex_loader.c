@@ -7,7 +7,7 @@
 
 
 
-rex_tile_map_t *rex_load_tile_map(char *filename) {
+rex_tile_map_t *rex_load_tile_map(const char *filename) {
 
     gzFile file = gzopen(filename, "r");
     if (!file) {
@@ -21,7 +21,7 @@ rex_tile_map_t *rex_load_tile_map(char *filename) {
     tile_map->layers = calloc(tile_map->layer_count, sizeof(rex_tile_layer_t));
 
     // Read each layer
-    for (int i = 0; i < tile_map->layer_count; i++) {
+    for (uint32_t i = 0; i < tile_map->layer_count; i++) {
         rex_tile_layer_t *layer = calloc(1, sizeof(rex_tile_layer_t));
         gzread(file, &layer->width, sizeof(layer->width));
         gzread(file, &layer->height, sizeof(layer->height));
@@ -61,9 +61,10 @@ rex_tile_layer_t *rex_flatten_tile_map(rex_tile_map_t *map) {
     rex_tile_layer_t *working_layer = calloc(tile_count, sizeof(rex_tile_t));
     working_layer->width = map->width;
     working_layer->height = map->height;
+    working_layer->tiles = calloc(tile_count, sizeof(rex_tile_t));
 
     // Flatten all layers down to a single layer
-    for (uint32_t l = map->layer_count - 1; l >= 0; l--) {
+    for (int32_t l = map->layer_count - 1; l >= 0; l--) {
         rex_tile_layer_t *layer = &map->layers[l];
         for (uint32_t t = 0; t < tile_count; t++) {
             if (!rex_tile_is_transparent(&layer->tiles[t])) {

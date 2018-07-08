@@ -5,7 +5,7 @@
 #include "rex_loader.h"
 
 
-console_image_t *image_from_rexfile(const char *filename) {
+console_image_t *console_image_from_rexfile(const char *filename) {
     
     rex_tile_map_t *map = rex_load_tile_map(filename);
     if (!map) {
@@ -47,5 +47,9 @@ void image_destroy(console_image_t *image) {
     free(image);
 }
 
+
+console_cell_t *console_image_cell(const console_image_t *image, const uint32_t x, const uint32_t y) {
+    return &image->cells[(x * image->height) + y];
+}
 
 

@@ -4,6 +4,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include "console.h"
 #include "rex_loader.h"
 
 #define SCREEN_WIDTH	1280
@@ -24,40 +25,9 @@
 #define COLOR_FROM_RGBA(r, g, b, a) ((r << 24) | (g << 16) | (b << 8) | a)
 
 
-typedef struct {
-    uint32_t glyph;
-    uint32_t fg_color;
-    uint32_t bg_color;
-} console_cell_t;
-
-typedef struct {
-    uint32_t width;
-    uint32_t height;
-    console_cell_t *tiles;
-} console_image_t;
-
-
 int main() {
 
-    rex_tile_map_t *map = rex_load_tile_map("./assets/cat.xp");
 
-    if (map != NULL) {
-        printf("width: %d, height: %d, layers: %d\n", map->width, map->height, map->layer_count);
-
-        for (uint32_t l = 0; l < map->layer_count; l++) {
-            printf("Layer %d\n", l);
-            rex_tile_layer_t *layer = &map->layers[l];
-            uint32_t tile_count = layer->width * layer->height;
-            for (uint32_t t = 0; t < tile_count; t++) {
-                rex_tile_t *tile = &layer->tiles[t];
-                printf("%d (%d,%d,%d) (%d,%d,%d)\n", tile->char_code, tile->fg_red, tile->fg_green, tile->fg_blue, tile->bg_red, tile->bg_green, tile->bg_blue);
-            }
-
-        }
-    }
-
-
-    /*
     time_t t;
     srand((unsigned) time(&t));
 
@@ -68,7 +38,7 @@ int main() {
 		SDL_WINDOWPOS_UNDEFINED, 
 		SDL_WINDOWPOS_UNDEFINED,
 		SCREEN_WIDTH, SCREEN_HEIGHT,
-		SDL_WINDOW_FULLSCREEN);
+		0); //SDL_WINDOW_FULLSCREEN);
 
 	SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 	SDL_RenderSetLogicalSize(renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -76,7 +46,9 @@ int main() {
     SDL_Surface *image = IMG_Load("assets/font10x16.png");
     SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, image);
     SDL_FreeSurface(image);
-
+    
+    console_image_t *img = console_image_from_rexfile("./assets/cat.xp");
+    
     SDL_Event event;
     uint32_t timePerFrame = 1000 / FPS_LIMIT;
     uint32_t frameStart = 0;
@@ -90,20 +62,18 @@ int main() {
         }
 
         SDL_RenderClear(renderer);
-        for (int row = 0; row < NUM_ROWS; row++) {
-            for (int col = 0; col < NUM_COLS; col++) {
-                int idx = 35;//rand() % 256;
-                Uint8 r = rand() % 256;
-                Uint8 g = rand() % 256;
-                Uint8 b = rand() % 256;
-                int x = (idx % 16) * 10;
-                int y = (idx / 16) * 16;
-                SDL_Rect src_rect = {x, y,  10, 16};
-                SDL_Rect dst_rect = {col*10, row*16, 10, 16};
-                SDL_SetTextureColorMod(texture, r, g, b);
+        for (uint32_t y = 0; y < img->height; y++) {
+            for (uint32_t x = 0; x < img->width; x++) {
+                console_cell_t *cell = console_image_cell(img, x, y);
+                int tex_x = (cell->glyph % 16) * 10;
+                int tex_y = (cell->glyph / 16) * 16;
+                SDL_Rect src_rect = {tex_x, tex_y,  10, 16};
+                SDL_Rect dst_rect = {x*10, y*16, 10, 16};
+
+                SDL_SetTextureColorMod(texture, RED(cell->fg_color), GREEN(cell->fg_color), BLUE(cell->fg_color));
                 SDL_RenderCopy(renderer, texture, &src_rect, &dst_rect);
             }
-        } 
+        }
         SDL_RenderPresent(renderer);
 
         // Limit our top FPS
@@ -119,9 +89,8 @@ int main() {
 
     IMG_Quit();
 	SDL_Quit();
-*/
-	return 0;
 
+	return 0;
 
 }
 
