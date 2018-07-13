@@ -27,7 +27,6 @@
 
 int main() {
 
-
     time_t t;
     srand((unsigned) time(&t));
 
@@ -38,16 +37,15 @@ int main() {
 		SDL_WINDOWPOS_UNDEFINED, 
 		SDL_WINDOWPOS_UNDEFINED,
 		SCREEN_WIDTH, SCREEN_HEIGHT,
-		0); //SDL_WINDOW_FULLSCREEN);
+		SDL_WINDOW_FULLSCREEN);
 
-	SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-	SDL_RenderSetLogicalSize(renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
-
-    SDL_Surface *image = IMG_Load("assets/font10x16.png");
-    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, image);
-    SDL_FreeSurface(image);
+    console_t *console = console_create(window, SCREEN_WIDTH, SCREEN_HEIGHT, NUM_ROWS, NUM_COLS, 255, "assets/font10x16.png");
+    console_screen_t *screen = console_screen_create(NUM_COLS, NUM_ROWS, 255);
     
-    console_image_t *img = console_image_from_rexfile("./assets/cat.xp");
+    console_view_t *view = console_view_from_rexfile("./assets/cat.xp");
+   
+    uint32_t x = 0;
+    uint32_t y = 0;
     
     SDL_Event event;
     uint32_t timePerFrame = 1000 / FPS_LIMIT;
@@ -59,22 +57,22 @@ int main() {
             if (event.type == SDL_QUIT) {
                 break;
             }
-        }
 
-        SDL_RenderClear(renderer);
-        for (uint32_t y = 0; y < img->height; y++) {
-            for (uint32_t x = 0; x < img->width; x++) {
-                console_cell_t *cell = console_image_cell(img, x, y);
-                int tex_x = (cell->glyph % 16) * 10;
-                int tex_y = (cell->glyph / 16) * 16;
-                SDL_Rect src_rect = {tex_x, tex_y,  10, 16};
-                SDL_Rect dst_rect = {x*10, y*16, 10, 16};
-
-                SDL_SetTextureColorMod(texture, RED(cell->fg_color), GREEN(cell->fg_color), BLUE(cell->fg_color));
-                SDL_RenderCopy(renderer, texture, &src_rect, &dst_rect);
+            if (event.type == SDL_KEYDOWN) {
+                switch (event.key.keysym.sym) {
+                    case SDLK_LEFT: x -= 1; break;
+                    case SDLK_RIGHT: x += 1; break;
+                    case SDLK_UP: y -= 1; break;
+                    case SDLK_DOWN: y += 1; break;
+                }
             }
         }
-        SDL_RenderPresent(renderer);
+
+        console_clear(console);
+        console_screen_clear(screen);
+
+        console_screen_put_view_at(screen, view, x, y);
+        console_render_screen(console, screen);
 
         // Limit our top FPS
         int32_t sleepTime = timePerFrame - (SDL_GetTicks() - frameStart);
@@ -83,8 +81,9 @@ int main() {
         }
     }
 
-    SDL_DestroyTexture(texture);
-	SDL_DestroyRenderer(renderer);
+    console_view_destroy(view);
+    console_screen_destroy(screen);
+    console_destroy(console);
 	SDL_DestroyWindow(window);
 
     IMG_Quit();
