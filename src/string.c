@@ -6,7 +6,7 @@
 #include "string.h"
 
 
-char * string_new(const char * string_with_format, ...) {
+char * string_create(const char * string_with_format, ...) {
     char *str = NULL;
     char *fmt;
 
@@ -99,11 +99,11 @@ bool string_equals(char *str1, char *str2) {
 #ifdef __TEST__
 
 int main () {
-    char *str1 = string_new("Formatted string: %d", 1);
+    char *str1 = string_create("Formatted string: %d", 1);
     printf("FS 1: %s\n", str1);
-    char *str2 = string_new("Formatted string: %s", "two");
+    char *str2 = string_create("Formatted string: %s", "two");
     printf("FS 2: %s\n", str2);
-    char *str3 = string_new("Three");
+    char *str3 = string_create("Three");
     printf("FS 3: %s\n", str3);
 
     char *app1 = string_append(str3, " + %s = %d", "one", 4);
@@ -114,8 +114,8 @@ int main () {
     string_destroy(str3);
     string_destroy(app1);
 
-    char *s1 = string_new("Testing equals");
-    char *s2 = string_new("Testing equals");
+    char *s1 = string_create("Testing equals");
+    char *s2 = string_create("Testing equals");
     printf("Strings are equal: %s\n", string_equals(s1, s2) ? "true" : "false");
 
 }

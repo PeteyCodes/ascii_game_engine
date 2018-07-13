@@ -41,7 +41,7 @@ typedef struct {
 
 // Allocation / Destruction
 
-list_t * list_new(void (*destroy_item_data)(void *));
+list_t * list_create(void (*destroy_item_data)(void *));
 
 void list_destroy(list_t *list);
 

@@ -7,7 +7,7 @@
 
 
 /* Internal Interface */
-static list_item_t * list_item_new(void *data);
+static list_item_t * list_item_create(void *data);
 
 
 /* Public Interface */
@@ -15,7 +15,7 @@ static list_item_t * list_item_new(void *data);
 
 // Allocation / Destruction
 
-list_t * list_new(void (*destroy_item_data)(void *)) {
+list_t * list_create(void (*destroy_item_data)(void *)) {
     list_t *list = malloc(sizeof(list_t));
     list->first = NULL;
     list->last = NULL;
@@ -74,7 +74,7 @@ int32_t list_index_of(list_t *list, void *value) {
 // Data Manipulation --
 
 void list_append(list_t *list, void *data) {
-    list_item_t *item = list_item_new(data);
+    list_item_t *item = list_item_create(data);
 
     item->prev = list->last;
     item->next = NULL;
@@ -90,7 +90,7 @@ void list_append(list_t *list, void *data) {
 }
 
 void list_insert_at(list_t *list, int32_t idx, void *data) {
-    list_item_t *item = list_item_new(data);
+    list_item_t *item = list_item_create(data);
 
     if (idx >= list->count) { 
         list_append(list, data);
@@ -116,7 +116,7 @@ void list_insert_at(list_t *list, int32_t idx, void *data) {
 }
 
 void list_prepend(list_t *list, void *data) {
-    list_item_t *item = list_item_new(data);
+    list_item_t *item = list_item_create(data);
 
     item->next = list->first;
     item->prev = NULL;
@@ -233,7 +233,7 @@ bool list_iterator_next(list_iterator_t *iter) {
 
 /* Internal Functions */
 
-static list_item_t * list_item_new(void *data) {
+static list_item_t * list_item_create(void *data) {
     list_item_t *item = malloc(sizeof(list_item_t));
     item->data = data;
     item->prev = NULL;
@@ -251,7 +251,7 @@ static list_item_t * list_item_new(void *data) {
 int main() {
     
     printf("-- RUNNING ALL LIST TESTS --\n");
-    list_t *list = list_new(NULL);
+    list_t *list = list_create(NULL);
 
     char *item3 = "Item 3";
     list_append(list, "Item 1");

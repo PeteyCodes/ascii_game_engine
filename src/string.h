@@ -13,7 +13,7 @@
  */
 
 
-char * string_new(const char * string_with_format, ...);
+char * string_create(const char * string_with_format, ...);
 char * string_append(char *string, const char * string_with_format, ...);
 void string_destroy(char *string);
 
