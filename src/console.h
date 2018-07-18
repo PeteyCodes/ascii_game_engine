@@ -20,6 +20,11 @@
 typedef struct {
     uint32_t x;
     uint32_t y;
+} console_point_t;
+
+typedef struct {
+    uint32_t x;
+    uint32_t y;
     uint32_t width;
     uint32_t height;
 } console_rect_t;
@@ -80,6 +85,8 @@ void console_screen_destroy(console_screen_t *screen);
 void console_screen_clear(console_screen_t *screen);
 
 console_cell_t *console_screen_cell(const console_screen_t *screen, const uint32_t x, const uint32_t y);
+
+void console_screen_put_text_at(console_screen_t *screen, const char *text, console_rect_t recti, uint32_t fg_color, uint32_t bg_color);
 
 void console_screen_put_view_at(console_screen_t *screen, console_view_t *view, uint32_t x, uint32_t y);
 

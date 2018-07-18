@@ -37,7 +37,7 @@ int main() {
 		SDL_WINDOWPOS_UNDEFINED, 
 		SDL_WINDOWPOS_UNDEFINED,
 		SCREEN_WIDTH, SCREEN_HEIGHT,
-		SDL_WINDOW_FULLSCREEN);
+		0); //SDL_WINDOW_FULLSCREEN);
 
     console_t *console = console_create(window, SCREEN_WIDTH, SCREEN_HEIGHT, NUM_ROWS, NUM_COLS, 255, "assets/font10x16.png");
     console_screen_t *screen = console_screen_create(NUM_COLS, NUM_ROWS, 255);
@@ -72,6 +72,8 @@ int main() {
         console_screen_clear(screen);
 
         console_screen_put_view_at(screen, view, x, y);
+        console_rect_t rect = {10, 30, 10, 2};
+        console_screen_put_text_at(screen, "Welcome to the Core", rect, COLOR_FROM_RGBA(0, 255, 0, 255), 255);
         console_render_screen(console, screen);
 
         // Limit our top FPS

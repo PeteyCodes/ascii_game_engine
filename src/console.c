@@ -117,6 +117,81 @@ console_cell_t *console_screen_cell(const console_screen_t *screen, const uint32
     return &screen->cells[(y * screen->width) + x];
 }
 
+typedef struct {
+    uint32_t start_idx;
+    uint32_t length;
+} text_span_t;
+
+/*
+ * Return a text span encompassing the next word in the given text.
+ * If no word is found before the end of the text, start_idx & length will both be 0.
+ */
+text_span_t text_get_next_word(const char *text, int32_t start_idx) {
+    text_span_t span = {0, 0};
+    int32_t curr_idx = start_idx;
+
+    // Find the start of the next word
+    char c = text[curr_idx];
+    while ((c == ' ' || c == '\t')) {
+        curr_idx += 1;
+        c = text[curr_idx];
+    }
+    
+    if (c != '\0') {
+        // We have a word, so find the end of it
+        span.start_idx = curr_idx;
+        int32_t len = 0;
+        while (c != ' ' && c != '\t' && c != '\0') {
+            len += 1;
+            curr_idx += 1;
+            c = text[curr_idx];
+        }
+        span.length = len;
+    }
+
+    return span;
+}
+
+void console_screen_put_text_at(console_screen_t *screen, const char *text, console_rect_t rect, uint32_t fg_color, uint32_t bg_color) {
+    console_point_t curr_point = {rect.x, rect.y};
+    int32_t idx = 0;
+    text_span_t span = text_get_next_word(text, idx);
+    while (span.length > 0) {
+        bool add_space = true;
+
+        if (span.length > rect.width) { return; }
+        
+        // Write the next word to the console, wrapping if necessary
+        if ((curr_point.x + span.length) > (rect.x + rect.width)) {
+            // Wrap to next line
+            curr_point.x = rect.x;
+            curr_point.y += 1;
+        }
+
+        idx = span.start_idx;
+        if (curr_point.y < (rect.y + rect.height)) {
+            for (uint32_t i = 0; i < span.length; i++) {
+                char c = text[idx + i];
+                console_cell_t cell = {c, fg_color, bg_color};
+                console_screen_set_cell(screen, curr_point.x + i, curr_point.y, cell);
+            }
+            curr_point.x += span.length;
+        }
+
+        // Grab the span for the next word, if there is one
+        idx = span.start_idx + span.length;
+        span = text_get_next_word(text, idx);
+        if (span.length == 0) { add_space = false; }
+
+        // Add a space after the word we just wrote, if warranted and there's room
+        if (add_space && curr_point.x < (rect.x + rect.width)) {
+            console_cell_t spc = { 0, fg_color, bg_color };
+            console_screen_set_cell(screen, curr_point.x, curr_point.y, spc);
+            curr_point.x += 1;
+        }
+    }
+}
+
 void console_screen_put_view_at(console_screen_t *screen, console_view_t *view, uint32_t x, uint32_t y) {
     console_rect_t rect = {x, y, view->width, view->height};
     console_screen_set_cells(screen, &rect, view->cells);
@@ -139,7 +214,6 @@ void console_screen_set_cells(console_screen_t *screen, console_rect_t *rect, co
 /* Console Views */
 
 console_view_t *console_view_from_rexfile(const char *filename) {
-    
     rex_tile_map_t *map = rex_load_tile_map(filename);
     if (!map) {
         return NULL;
